@@ -1,136 +1,105 @@
 local wezterm = require 'wezterm'
+local sessionizer = require 'sessionizer'
 local mux = wezterm.mux
 local act = wezterm.action
+local platform = wezterm.target_triple
+local windows = false
+
+if platform:find("windows") then
+    windows = true
+end
 
 local config = {
-    default_prog = { 'powershell.exe', '-NoLogo' },
-    prefer_egl = true,
     color_scheme = 'Tokyo Night Moon',
-    window_decorations = "NONE",
+    window_decorations = "RESIZE",
+    window_padding = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+    },
     visual_bell = {
         fade_in_duration_ms = 0,
         fade_out_duration_ms = 0,
     },
 
-    -- Show the name of the current process in the tab title
     use_fancy_tab_bar = true,
-    tab_bar_at_bottom = false,
+    tab_bar_at_bottom = true,
     hide_tab_bar_if_only_one_tab = false,
     show_tab_index_in_tab_bar = true,
     tab_max_width = 25,
+    -- Closing behavior
+    quit_when_all_windows_are_closed = true,
+    confirm_close = false,
 
-    -- Set the leader key to Ctrl+a like tmux
+    -- Theme
+    -- color_scheme = "tokyonight_storm",  -- You can uncomment one of the themes you want
+    -- color_scheme = "catppuccin-macchiato",
+    -- color_scheme = "rose-pine-moon",
+    -- color_scheme = "OneHalfDark",
+
+    -- Font
+    font = wezterm.font("JetBrains Mono", { weight = "Regular" }),
+    font_size = 14,
+    -- font = wezterm.font("MonaspiceNe Nerd Font Mono"),
+    -- font_style = "Light",  -- Not needed for WezTerm
+
+    -- macOS specific features
+    macos_titlebar_style = "hidden",
+    macos_option_as_alt = true,
+
+    -- Window
+    window_background_opacity = 0.95,
+    window_background_blur = 20,
+
+    -- Shell
+    shell_integration_features = { "no-cursor", "no-sudo", "title" },
+
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
 
-    -- Configure keybindings
     keys = {
-        -- Create a new tab with leader + n
-        { key = 'n',          mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
-
-        -- Split panes - right, left, below, above
-        { key = 'L',          mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-        { key = 'H',          mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-        { key = 'J',          mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
-        { key = 'K',          mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
-
-        -- Switch to tab 1-9
-        { key = '1',          mods = 'LEADER',      action = act.ActivateTab(0) },
-        { key = '2',          mods = 'LEADER',      action = act.ActivateTab(1) },
-        { key = '3',          mods = 'LEADER',      action = act.ActivateTab(2) },
-        { key = '4',          mods = 'LEADER',      action = act.ActivateTab(3) },
-        { key = '5',          mods = 'LEADER',      action = act.ActivateTab(4) },
-        { key = '6',          mods = 'LEADER',      action = act.ActivateTab(5) },
-        { key = '7',          mods = 'LEADER',      action = act.ActivateTab(6) },
-        { key = '8',          mods = 'LEADER',      action = act.ActivateTab(7) },
-        { key = '9',          mods = 'LEADER',      action = act.ActivateTab(8) },
-
-        -- Navigate between panes
-        { key = 'LeftArrow',  mods = 'LEADER',      action = act.ActivatePaneDirection 'Left' },
-        { key = 'RightArrow', mods = 'LEADER',      action = act.ActivatePaneDirection 'Right' },
-        { key = 'UpArrow',    mods = 'LEADER',      action = act.ActivatePaneDirection 'Up' },
-        { key = 'DownArrow',  mods = 'LEADER',      action = act.ActivatePaneDirection 'Down' },
-
-        -- Navigate between panes with vim-style hjkl
-        { key = 'h',          mods = 'LEADER',      action = act.ActivatePaneDirection 'Left' },
-        { key = 'l',          mods = 'LEADER',      action = act.ActivatePaneDirection 'Right' },
-        { key = 'k',          mods = 'LEADER',      action = act.ActivatePaneDirection 'Up' },
-        { key = 'j',          mods = 'LEADER',      action = act.ActivatePaneDirection 'Down' },
-
-        -- Send the leader key through to the application by pressing it twice
-        { key = 'a',          mods = 'LEADER|CTRL', action = act.SendKey { key = 'a', mods = 'CTRL' } },
-
-        -- Sessionizer - Ctrl+f to open project selector
+        { key = 's', mods = 'LEADER',      action = act.ShowLauncher },
+        { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
+        { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
+        { key = 'H', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
+        { key = 'J', mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
+        { key = 'K', mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
+        { key = '1', mods = 'LEADER',      action = act.ActivateTab(0) },
+        { key = '2', mods = 'LEADER',      action = act.ActivateTab(1) },
+        { key = '3', mods = 'LEADER',      action = act.ActivateTab(2) },
+        { key = '4', mods = 'LEADER',      action = act.ActivateTab(3) },
+        { key = '5', mods = 'LEADER',      action = act.ActivateTab(4) },
+        { key = '6', mods = 'LEADER',      action = act.ActivateTab(5) },
+        { key = '7', mods = 'LEADER',      action = act.ActivateTab(6) },
+        { key = '8', mods = 'LEADER',      action = act.ActivateTab(7) },
+        { key = '9', mods = 'LEADER',      action = act.ActivateTab(8) },
+        { key = 'h', mods = 'LEADER',      action = act.ActivatePaneDirection 'Left' },
+        { key = 'l', mods = 'LEADER',      action = act.ActivatePaneDirection 'Right' },
+        { key = 'k', mods = 'LEADER',      action = act.ActivatePaneDirection 'Up' },
+        { key = 'j', mods = 'LEADER',      action = act.ActivatePaneDirection 'Down' },
+        { key = 'a', mods = 'LEADER|CTRL', action = act.SendKey { key = 'a', mods = 'CTRL' } },
         {
             key = 'f',
             mods = 'CTRL',
             action = wezterm.action_callback(function(window, pane)
-                -- Check if the current foreground process is nvim
                 local process = pane:get_foreground_process_name():lower()
                 if process:find("n?vim") then
-                    -- If in nvim, pass the keystroke through
                     window:perform_action(
                         act.SendKey { key = 'f', mods = 'CTRL' },
                         pane
                     )
                 else
-                    -- Otherwise run the sessionizer - using appropriate path for Windows
-                    local home = os.getenv("USERPROFILE") or os.getenv("HOME")
-                    local sessionizer_path
-
-                    -- Check if we're on Windows or Unix-like
-                    if package.config:sub(1, 1) == '\\' then
-                        -- Windows
-                        sessionizer_path = home .. "\\wezterm-sessionizer.ps1"
-                        window:perform_action(
-                            act.SpawnCommandInNewTab {
-                                args = {
-                                    'powershell.exe',
-                                    '-NoProfile',
-                                    '-ExecutionPolicy',
-                                    'Bypass',
-                                    '-File',
-                                    sessionizer_path
-                                },
-                            },
-                            pane
-                        )
-                    else
-                        -- Unix-like
-                        sessionizer_path = home .. "/.local/bin/wezterm-sessionizer"
-                        window:perform_action(
-                            act.SpawnCommandInNewTab {
-                                args = { sessionizer_path },
-                            },
-                            pane
-                        )
-                    end
-
-                    local cwd = os.getenv("WEZTERM_WORKSPACE_PATH")
-                    local workspace = os.getenv("WEZTERM_WORKSPACE_NAME")
-
-                    if cwd and workspace then
-                        wezterm.on("spawn-my-workspace", function(_window, _pane)
-                            local path = cwd
-                            local workspace_name = workspace
-
-                            _window:perform_action(
-                                wezterm.action.SwitchToWorkspace {
-                                    name = workspace_name,
-                                },
-                                _pane
-                            )
-
-                            mux.spawn_window {
-                                workspace = workspace_name,
-                                cwd = path,
-                            }
-                        end)
-                    end
+                    sessionizer.toggle(window, pane);
                 end
             end),
         },
     },
 }
+
+if windows then
+    config.default_prog = { 'powershell.exe', '-NoLogo' };
+    config.prefer_egl = true;
+end
 
 wezterm.on('gui-startup', function(cmd)
     local _, _, window = mux.spawn_window(cmd or {})
@@ -147,6 +116,12 @@ wezterm.on('update-right-status', function(window, _)
         local process_name = proc:gsub("^.*/", "")
 
         tab:set_title(process_name)
+    end
+end)
+
+wezterm.on('user-var-changed', function(window, pane, name, value)
+    if name == 'my_custom_script_event' then
+        wezterm.log_info('Shell script emitted event: ' .. name .. ' with value: ' .. value)
     end
 end)
 
