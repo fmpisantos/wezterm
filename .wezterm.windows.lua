@@ -147,7 +147,7 @@ local config = {
     quit_when_all_windows_are_closed = true,
     font = wezterm.font("JetBrains Mono", { weight = "Regular" }),
     font_size = 12,
-    window_background_opacity = 0.95,
+    window_background_opacity = 1.0,
     window_background_image = nil,
     audible_bell = "Disabled",
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
