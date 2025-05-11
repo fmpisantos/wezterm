@@ -4,7 +4,7 @@ local act = wezterm.action
 local M = {}
 
 local directories = {
-    { "~/Projects/", 3 },
+    { "~/Projects/", 2 },
     { "~/.config/",  1 }
 }
 
@@ -34,7 +34,14 @@ M.toggle = function(window, pane)
 
         local choices = {}
         for dir in result:gmatch("[^\n]+") do
-            table.insert(choices, { label = dir, id = dir })
+            local label = dir
+            for _, pair in ipairs(directories) do
+                label = label:gsub(expand_path(pair[1]), "")
+            end
+            if label == "" then
+                label = dir
+            end
+            table.insert(choices, { label = label, id = dir })
         end
         return choices
     end

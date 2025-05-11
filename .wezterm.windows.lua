@@ -56,6 +56,7 @@ local function sessionizer(window, pane)
                 "Get-ChildItem -Path '%s' -Recurse -Directory -Depth %d | Select-Object -ExpandProperty FullName",
                 path, maxdepth
             )
+
             table.insert(parts, cmd)
         end
 
@@ -71,7 +72,14 @@ local function sessionizer(window, pane)
 
         local choices = {}
         for dir in result:gmatch("[^\n]+") do
-            table.insert(choices, { label = dir, id = dir })
+            local label = dir
+            for _, pair in ipairs(directories) do
+                label = label:gsub(expand_path(pair[1]), "")
+            end
+            if label == "" then
+                label = dir
+            end
+            table.insert(choices, { label = label, id = dir })
         end
         return choices
     end
