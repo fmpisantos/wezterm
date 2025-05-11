@@ -1,14 +1,10 @@
 local wezterm = require("wezterm")
+local constants = require "constants"
 local act = wezterm.action
 
 local M = {}
 
-local directories = {
-    { "~/Projects/", 2 },
-    { "~/.config/",  1 }
-}
-
-M.toggle = function(window, pane)
+M.toggle = function(window, pane, windows)
     local function expand_path(path)
         return path:gsub("^~", os.getenv("HOME"))
     end
@@ -19,15 +15,26 @@ M.toggle = function(window, pane)
         for _, entry in ipairs(dirs) do
             local path = expand_path(entry[1])
             local maxdepth = entry[2]
-            local cmd = string.format('find "%s" -mindepth 0 -maxdepth %d -type d', path, maxdepth)
+            local cmd
+            if windows then
+                cmd = string.format(
+                    "Get-ChildItem -Path '%s' -Recurse -Directory -Depth %d | Select-Object -ExpandProperty FullName",
+                    path, maxdepth
+                )
+            else
+                cmd = string.format('find "%s" -mindepth 0 -maxdepth %d -type d', path, maxdepth)
+            end
             table.insert(parts, cmd)
         end
 
+        if windows then
+            return "powershell -Command \"" .. table.concat(parts, " ; ") .. "\""
+        end
         return table.concat(parts, ";\n") .. " 2> /dev/null"
     end
 
     local function get_projects()
-        local cmd = build_find_command(directories)
+        local cmd = build_find_command(constants.directories)
         local f = io.popen(cmd)
         local result = f:read("*a")
         f:close()
@@ -36,7 +43,7 @@ M.toggle = function(window, pane)
         local choices_labels = {}
         for dir in result:gmatch("[^\n]+") do
             local label = dir
-            for _, pair in ipairs(directories) do
+            for _, pair in ipairs(constants.directories) do
                 label = label:gsub(expand_path(pair[1]), "")
             end
             if label == "" then
