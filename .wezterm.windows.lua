@@ -98,12 +98,12 @@ local function sessionizer(window, pane)
             action = wezterm.action_callback(function(win, _, id, label)
                 if not id and not label then
                 else
-                    local workspace = label:match("([^/]+)$"):gsub("%.", "_")
+                    local workspace = id:match("([^/]+)$"):gsub("%.", "_")
 
                     win:perform_action(
                         act.SwitchToWorkspace({
                             name = workspace,
-                            spawn = { cwd = label }
+                            spawn = { cwd = id }
                         }),
                         pane
                     )
