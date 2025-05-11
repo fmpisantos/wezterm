@@ -1,12 +1,83 @@
 local wezterm = require 'wezterm'
-local sessionizer = require 'sessionizer'
+
 local mux = wezterm.mux
 local act = wezterm.action
 local platform = wezterm.target_triple
+
 local windows = false
 
 if platform:find("windows") then
     windows = true
+end
+
+local directories = {
+    { "D:\\",                   1 },
+    { "D:\\src",                1 },
+    { "D:\\inst",               1 },
+    { "D:\\net-nuget-packages", 1 },
+    { "E:\\",                   2 },
+    { "~/",                     2 },
+}
+
+local function sessionizer(window, pane)
+    local function expand_path(path)
+        return path:gsub("^~", os.getenv("HOME"))
+    end
+
+    local function build_find_command(dirs)
+        local parts = {}
+
+        for _, entry in ipairs(dirs) do
+            local path = expand_path(entry[1])
+            local maxdepth = entry[2]
+            local cmd = string.format(
+                "Get-ChildItem -Path '%s' -Recurse -Directory -Depth %d | Select-Object -ExpandProperty FullName",
+                path, maxdepth
+            )
+            table.insert(parts, cmd)
+        end
+
+        return "powershell -Command \"" .. table.concat(parts, ";\n") .. "\""
+    end
+
+    local function get_projects()
+        local cmd = build_find_command(directories)
+        -- wezterm.log_info(cmd);
+        local f = io.popen(cmd)
+        local result = f:read("*a")
+        f:close()
+
+        local choices = {}
+        for dir in result:gmatch("[^\n]+") do
+            table.insert(choices, { label = dir, id = dir })
+        end
+        return choices
+    end
+
+    local projects = get_projects()
+
+    window:perform_action(
+        act.InputSelector({
+            action = wezterm.action_callback(function(win, _, id, label)
+                if not id and not label then
+                else
+                    local workspace = label:match("([^/]+)$"):gsub("%.", "_")
+
+                    win:perform_action(
+                        act.SwitchToWorkspace({
+                            name = workspace,
+                            spawn = { cwd = label }
+                        }),
+                        pane
+                    )
+                end
+            end),
+            fuzzy = true,
+            title = "Select project",
+            choices = projects,
+        }),
+        pane
+    )
 end
 
 local config = {
@@ -64,13 +135,13 @@ local config = {
             mods = 'CTRL',
             action = wezterm.action_callback(function(window, pane)
                 local process = pane:get_foreground_process_name():lower()
-                if process:find("n?vim") then
+                if process:find("n?vim") or process:find("node.exe") then
                     window:perform_action(
                         act.SendKey { key = 'f', mods = 'CTRL' },
                         pane
                     )
                 else
-                    sessionizer.toggle(window, pane);
+                    sessionizer(window, pane);
                 end
             end),
         },
@@ -87,6 +158,10 @@ wezterm.on('gui-startup', function(cmd)
     window:gui_window():maximize()
 end)
 
+local function getExecutableName(path)
+    return path:match("([^\\]+)%.exe$")
+end
+
 wezterm.on('update-right-status', function(window, _)
     local _ = window:active_tab()
 
@@ -94,7 +169,7 @@ wezterm.on('update-right-status', function(window, _)
         local pane = tab:active_pane()
         local proc = pane:get_foreground_process_name()
 
-        local process_name = proc:gsub("^.*/", "")
+        local process_name = getExecutableName(proc:gsub("^.*/", ""))
 
         tab:set_title(process_name)
     end
