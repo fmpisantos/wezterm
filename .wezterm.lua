@@ -22,43 +22,23 @@ local config = {
         fade_in_duration_ms = 0,
         fade_out_duration_ms = 0,
     },
-
     use_fancy_tab_bar = true,
     tab_bar_at_bottom = true,
     hide_tab_bar_if_only_one_tab = false,
     show_tab_index_in_tab_bar = true,
     tab_max_width = 25,
-    -- Closing behavior
     quit_when_all_windows_are_closed = true,
-    confirm_close = false,
-
-    -- Theme
-    -- color_scheme = "tokyonight_storm",  -- You can uncomment one of the themes you want
-    -- color_scheme = "catppuccin-macchiato",
-    -- color_scheme = "rose-pine-moon",
-    -- color_scheme = "OneHalfDark",
-
-    -- Font
     font = wezterm.font("JetBrains Mono", { weight = "Regular" }),
     font_size = 14,
-    -- font = wezterm.font("MonaspiceNe Nerd Font Mono"),
-    -- font_style = "Light",  -- Not needed for WezTerm
-
-    -- macOS specific features
-    macos_titlebar_style = "hidden",
-    macos_option_as_alt = true,
-
-    -- Window
     window_background_opacity = 0.95,
-    window_background_blur = 20,
-
-    -- Shell
-    shell_integration_features = { "no-cursor", "no-sudo", "title" },
-
+    audible_bell = "Disabled",
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
-
     keys = {
-        { key = 's', mods = 'LEADER',      action = act.ShowLauncher },
+        {
+            key = 's',
+            mods = 'LEADER',
+            action = wezterm.action.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' },
+        },
         { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
         { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
         { key = 'H', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
@@ -116,12 +96,6 @@ wezterm.on('update-right-status', function(window, _)
         local process_name = proc:gsub("^.*/", "")
 
         tab:set_title(process_name)
-    end
-end)
-
-wezterm.on('user-var-changed', function(window, pane, name, value)
-    if name == 'my_custom_script_event' then
-        wezterm.log_info('Shell script emitted event: ' .. name .. ' with value: ' .. value)
     end
 end)
 
