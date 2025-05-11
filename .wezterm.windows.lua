@@ -126,6 +126,9 @@ local function resize(window, pane, side)
 end
 
 local config = {
+    max_fps = 155,
+    front_end = "WebGpu",
+    enable_scroll_bar = false,
     window_close_confirmation = "NeverPrompt",
     color_scheme = 'Tokyo Night Moon',
     window_decorations = "RESIZE",
