@@ -102,7 +102,6 @@ local config = {
             mods = 'CTRL',
             action = wezterm.action_callback(function(window, pane)
                 local process = pane:get_foreground_process_name():lower()
-                wezterm.log_info(process)
                 if process:find("nvim") then
                     wezterm.log_info("In nvim")
                     window:perform_action(
@@ -115,16 +114,8 @@ local config = {
             end),
         },
         {
-            key = 'F12',
-            action = wezterm.action_callback(function(window, pane)
-                wezterm.log_info("F12")
-                sessionizer.toggle(window, pane)
-            end)
-        },
-        {
             key = 'F13',
             action = wezterm.action_callback(function(window, pane)
-                wezterm.log_info("F13")
                 sessionizer.toggle(window, pane)
             end)
         },
