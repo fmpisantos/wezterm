@@ -54,7 +54,6 @@ local config = {
     font = wezterm.font("JetBrains Mono", { weight = "Regular" }),
     font_size = 15,
     window_background_opacity = 0.95,
-    -- window_background_opacity = 1.0,
     window_background_image = nil,
     audible_bell = "Disabled",
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
@@ -73,6 +72,11 @@ local config = {
             key = '[',
             mods = 'LEADER',
             action = act.EmitEvent 'trigger-vim-with-scrollback',
+        },
+        {
+            key = 'w',
+            mods = 'LEADER',
+            action = wezterm.action.CloseCurrentTab { confirm = false },
         },
         { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
         { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
@@ -98,7 +102,9 @@ local config = {
             mods = 'CTRL',
             action = wezterm.action_callback(function(window, pane)
                 local process = pane:get_foreground_process_name():lower()
-                if process:find("n?vim") then
+                wezterm.log_info(process)
+                if process:find("nvim") then
+                    wezterm.log_info("In nvim")
                     window:perform_action(
                         act.SendKey { key = 'f', mods = 'CTRL' },
                         pane
@@ -107,6 +113,20 @@ local config = {
                     sessionizer.toggle(window, pane);
                 end
             end),
+        },
+        {
+            key = 'F12',
+            action = wezterm.action_callback(function(window, pane)
+                wezterm.log_info("F12")
+                sessionizer.toggle(window, pane)
+            end)
+        },
+        {
+            key = 'F13',
+            action = wezterm.action_callback(function(window, pane)
+                wezterm.log_info("F13")
+                sessionizer.toggle(window, pane)
+            end)
         },
     },
 }
