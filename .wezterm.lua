@@ -21,8 +21,8 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     f:close()
 
     window:perform_action(
-        act.SpawnCommandInNewWindow {
-            args = { 'vim', name },
+        act.SpawnCommandInNewTab {
+            args = { 'nvim', '+', name },
         },
         pane
     )
