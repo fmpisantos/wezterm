@@ -33,6 +33,7 @@ M.toggle = function(window, pane)
         f:close()
 
         local choices = {}
+        local choices_labels = {}
         for dir in result:gmatch("[^\n]+") do
             local label = dir
             for _, pair in ipairs(directories) do
@@ -41,6 +42,11 @@ M.toggle = function(window, pane)
             if label == "" then
                 label = dir
             end
+            if choices_labels[label] then
+                label = dir
+            end
+            choices_labels[label] = true
+
             table.insert(choices, { label = label, id = dir })
         end
         return choices
