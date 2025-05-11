@@ -31,6 +31,14 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     os.remove(name)
 end)
 
+local resize_mode = false
+
+local function resize(window, pane, side)
+    if resize_mode then
+        window:perform_action(wezterm.action.AdjustPaneSize { side, 5 }, pane)
+    end
+end
+
 local config = {
     window_close_confirmation = "NeverPrompt",
     color_scheme = 'Tokyo Night Moon',
@@ -59,6 +67,16 @@ local config = {
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
     keys = {
         {
+            key = 'Escape',
+            action = wezterm.action_callback(function(win, pane)
+                if resize_mode then
+                    resize_mode = false
+                else
+                    win:perform_action(wezterm.action.SendKey { key = 'Escape' }, pane)
+                end
+            end),
+        },
+        {
             key = 's',
             mods = 'LEADER',
             action = wezterm.action.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' },
@@ -78,24 +96,80 @@ local config = {
             mods = 'LEADER',
             action = wezterm.action.CloseCurrentTab { confirm = false },
         },
-        { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
-        { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-        { key = 'H', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-        { key = 'J', mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
-        { key = 'K', mods = 'LEADER',      action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
-        { key = '1', mods = 'LEADER',      action = act.ActivateTab(0) },
-        { key = '2', mods = 'LEADER',      action = act.ActivateTab(1) },
-        { key = '3', mods = 'LEADER',      action = act.ActivateTab(2) },
-        { key = '4', mods = 'LEADER',      action = act.ActivateTab(3) },
-        { key = '5', mods = 'LEADER',      action = act.ActivateTab(4) },
-        { key = '6', mods = 'LEADER',      action = act.ActivateTab(5) },
-        { key = '7', mods = 'LEADER',      action = act.ActivateTab(6) },
-        { key = '8', mods = 'LEADER',      action = act.ActivateTab(7) },
-        { key = '9', mods = 'LEADER',      action = act.ActivateTab(8) },
-        { key = 'h', mods = 'LEADER',      action = act.ActivatePaneDirection 'Left' },
-        { key = 'l', mods = 'LEADER',      action = act.ActivatePaneDirection 'Right' },
-        { key = 'k', mods = 'LEADER',      action = act.ActivatePaneDirection 'Up' },
-        { key = 'j', mods = 'LEADER',      action = act.ActivatePaneDirection 'Down' },
+        { key = 'n', mods = 'LEADER', action = act.SpawnTab 'DefaultDomain' },
+        { key = 'L', mods = 'LEADER', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
+        { key = 'H', mods = 'LEADER', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
+        { key = 'J', mods = 'LEADER', action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
+        { key = 'K', mods = 'LEADER', action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
+        { key = '1', mods = 'LEADER', action = act.ActivateTab(0) },
+        { key = '2', mods = 'LEADER', action = act.ActivateTab(1) },
+        { key = '3', mods = 'LEADER', action = act.ActivateTab(2) },
+        { key = '4', mods = 'LEADER', action = act.ActivateTab(3) },
+        { key = '5', mods = 'LEADER', action = act.ActivateTab(4) },
+        { key = '6', mods = 'LEADER', action = act.ActivateTab(5) },
+        { key = '7', mods = 'LEADER', action = act.ActivateTab(6) },
+        { key = '8', mods = 'LEADER', action = act.ActivateTab(7) },
+        { key = '9', mods = 'LEADER', action = act.ActivateTab(8) },
+        { key = 'h', mods = 'LEADER', action = act.ActivatePaneDirection 'Left' },
+        { key = 'l', mods = 'LEADER', action = act.ActivatePaneDirection 'Right' },
+        { key = 'k', mods = 'LEADER', action = act.ActivatePaneDirection 'Up' },
+        { key = 'j', mods = 'LEADER', action = act.ActivatePaneDirection 'Down' },
+        {
+            key = '<',
+            action = wezterm.action_callback(function(window, pane)
+                resize(window, pane, 'Left')
+            end)
+        },
+        {
+            key = '>',
+            action = wezterm.action_callback(function(window, pane)
+                resize(window, pane, 'Right')
+            end)
+        },
+        {
+            key = '|',
+            action = wezterm.action_callback(function(window, pane)
+                resize(window, pane, 'Up')
+            end)
+        },
+        {
+            key = '\\',
+            action = wezterm.action_callback(function(window, pane)
+                resize(window, pane, 'Down')
+            end)
+        },
+        {
+            key = '<',
+            mods = 'LEADER',
+            action = wezterm.action_callback(function(window, pane)
+                resize_mode = true
+                resize(window, pane, 'Left')
+            end)
+        },
+        {
+            key = '>',
+            mods = 'LEADER',
+            action = wezterm.action_callback(function(window, pane)
+                resize_mode = true
+                resize(window, pane, 'Right')
+            end)
+        },
+        {
+            key = '\\',
+            mods = 'LEADER',
+            action = wezterm.action_callback(function(window, pane)
+                resize_mode = true
+                resize(window, pane, 'Down')
+            end)
+        },
+        {
+            key = '|',
+            mods = 'LEADER',
+            action = wezterm.action_callback(function(window, pane)
+                resize_mode = true
+                resize(window, pane, 'Up')
+            end)
+        },
         { key = 'a', mods = 'LEADER|CTRL', action = act.SendKey { key = 'a', mods = 'CTRL' } },
         {
             key = 'f',
