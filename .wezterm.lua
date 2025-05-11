@@ -103,7 +103,7 @@ local config = {
             action = wezterm.action_callback(function(window, pane)
                 local process = pane:get_foreground_process_name():lower()
                 if process:find("nvim") then
-                    wezterm.log_info("In nvim")
+                    -- wezterm.log_info("In nvim")
                     window:perform_action(
                         act.SendKey { key = 'f', mods = 'CTRL' },
                         pane
