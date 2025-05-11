@@ -1,6 +1,8 @@
 local wezterm = require 'wezterm'
 
 local mux = wezterm.mux
+local io = require 'io'
+local os = require 'os'
 local act = wezterm.action
 local platform = wezterm.target_triple
 
@@ -10,13 +12,33 @@ if platform:find("windows") then
     windows = true
 end
 
+wezterm.on('trigger-vim-with-scrollback', function(window, pane)
+    local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+
+    local name = os.tmpname()
+    local f = io.open(name, 'w+')
+    f:write(text)
+    f:flush()
+    f:close()
+
+    window:perform_action(
+        act.SpawnCommandInNewWindow {
+            args = { 'vim', name },
+        },
+        pane
+    )
+
+    wezterm.sleep_ms(1000)
+    os.remove(name)
+end)
+
 local directories = {
-    { "D:\\",                   1 },
-    { "D:\\src",                1 },
-    { "D:\\inst",               1 },
-    { "D:\\net-nuget-packages", 1 },
-    { "E:\\",                   2 },
-    { "~/",                     2 },
+    { "D:\\",                           0 },
+    { "D:\\src",                        0 },
+    { "D:\\SIHOT.PMS",                  0 },
+    { "D:\\net-nuget-packages",         0 },
+    { "~\\.config",                     0 },
+    { "~\\Documents/WindowsPowerShell", 0 },
 }
 
 local function sessionizer(window, pane)
@@ -37,7 +59,7 @@ local function sessionizer(window, pane)
             table.insert(parts, cmd)
         end
 
-        return "powershell -Command \"" .. table.concat(parts, ";\n") .. "\""
+        return "powershell -Command \"" .. table.concat(parts, " ; ") .. "\""
     end
 
     local function get_projects()
@@ -110,6 +132,16 @@ local config = {
             key = 's',
             mods = 'LEADER',
             action = wezterm.action.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' },
+        },
+        {
+            key = 'E',
+            mods = 'LEADER',
+            action = act.EmitEvent 'trigger-vim-with-scrollback',
+        },
+        {
+            key = '[',
+            mods = 'LEADER',
+            action = act.EmitEvent 'trigger-vim-with-scrollback',
         },
         { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
         { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },

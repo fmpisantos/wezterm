@@ -1,6 +1,8 @@
 local wezterm = require 'wezterm'
 local sessionizer = require 'sessionizer'
 local mux = wezterm.mux
+local io = require 'io'
+local os = require 'os'
 local act = wezterm.action
 local platform = wezterm.target_triple
 local windows = false
@@ -8,6 +10,26 @@ local windows = false
 if platform:find("windows") then
     windows = true
 end
+
+wezterm.on('trigger-vim-with-scrollback', function(window, pane)
+    local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
+
+    local name = os.tmpname()
+    local f = io.open(name, 'w+')
+    f:write(text)
+    f:flush()
+    f:close()
+
+    window:perform_action(
+        act.SpawnCommandInNewWindow {
+            args = { 'vim', name },
+        },
+        pane
+    )
+
+    wezterm.sleep_ms(1000)
+    os.remove(name)
+end)
 
 local config = {
     window_close_confirmation = "NeverPrompt",
@@ -40,6 +62,17 @@ local config = {
             mods = 'LEADER',
             action = wezterm.action.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' },
         },
+        {
+            key = 'E',
+            mods = 'LEADER',
+            action = act.EmitEvent 'trigger-vim-with-scrollback',
+        },
+        {
+            key = '[',
+            mods = 'LEADER',
+            action = act.EmitEvent 'trigger-vim-with-scrollback',
+        },
+        { key = 'n', mods = 'leader',      action = act.spawntab 'defaultdomain' },
         { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
         { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
         { key = 'H', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
