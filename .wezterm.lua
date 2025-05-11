@@ -10,6 +10,7 @@ if platform:find("windows") then
 end
 
 local config = {
+    window_close_confirmation = "NeverPrompt",
     color_scheme = 'Tokyo Night Moon',
     window_decorations = "RESIZE",
     window_padding = {
