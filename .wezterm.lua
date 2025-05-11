@@ -53,7 +53,9 @@ local config = {
     quit_when_all_windows_are_closed = true,
     font = wezterm.font("JetBrains Mono", { weight = "Regular" }),
     font_size = 14,
-    window_background_opacity = 0.95,
+    -- window_background_opacity = 0.95,
+    window_background_opacity = 1.0,
+    window_background_image = nil,
     audible_bell = "Disabled",
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
     keys = {
@@ -72,7 +74,6 @@ local config = {
             mods = 'LEADER',
             action = act.EmitEvent 'trigger-vim-with-scrollback',
         },
-        { key = 'n', mods = 'leader',      action = act.spawntab 'defaultdomain' },
         { key = 'n', mods = 'LEADER',      action = act.SpawnTab 'DefaultDomain' },
         { key = 'L', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
         { key = 'H', mods = 'LEADER',      action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
