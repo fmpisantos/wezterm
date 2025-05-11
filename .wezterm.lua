@@ -27,13 +27,6 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
         pane
     )
 
-    -- window:perform_action(
-    --     act.SpawnCommandInNewTab {
-    --         args = { 'nvim', '+', name }
-    --     },
-    --     pane
-    -- )
-
     wezterm.sleep_ms(1000)
     os.remove(name)
 end)
@@ -65,7 +58,7 @@ local config = {
     },
     use_fancy_tab_bar = true,
     tab_bar_at_bottom = true,
-    hide_tab_bar_if_only_one_tab = false,
+    hide_tab_bar_if_only_one_tab = true,
     show_tab_index_in_tab_bar = true,
     tab_max_width = 25,
     quit_when_all_windows_are_closed = true,
@@ -76,16 +69,16 @@ local config = {
     audible_bell = "Disabled",
     leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
     keys = {
-        {
-            key = 'Escape',
-            action = wezterm.action_callback(function(win, pane)
-                if resize_mode then
-                    resize_mode = false
-                else
-                    win:perform_action(wezterm.action.SendKey { key = 'Escape' }, pane)
-                end
-            end),
-        },
+        -- {
+        --     key = 'Escape',
+        --     action = wezterm.action_callback(function(win, pane)
+        --         if resize_mode then
+        --             resize_mode = false
+        --         else
+        --             win:perform_action(wezterm.action.SendKey { key = 'Escape' }, pane)
+        --         end
+        --     end),
+        -- },
         {
             key = 's',
             mods = 'LEADER',
@@ -124,30 +117,42 @@ local config = {
         { key = 'l', mods = 'LEADER', action = act.ActivatePaneDirection 'Right' },
         { key = 'k', mods = 'LEADER', action = act.ActivatePaneDirection 'Up' },
         { key = 'j', mods = 'LEADER', action = act.ActivatePaneDirection 'Down' },
-        {
-            key = '<',
-            action = wezterm.action_callback(function(window, pane)
-                resize(window, pane, 'Left')
-            end)
-        },
-        {
-            key = '>',
-            action = wezterm.action_callback(function(window, pane)
-                resize(window, pane, 'Right')
-            end)
-        },
-        {
-            key = '|',
-            action = wezterm.action_callback(function(window, pane)
-                resize(window, pane, 'Up')
-            end)
-        },
-        {
-            key = '\\',
-            action = wezterm.action_callback(function(window, pane)
-                resize(window, pane, 'Down')
-            end)
-        },
+        -- {
+        --     key = '<',
+        --     action = wezterm.action_callback(function(window, pane)
+        --         local process = pane:get_foreground_process_name():lower()
+        --         if not process:find("nvim") then
+        --             resize(window, pane, 'Left')
+        --         end
+        --     end)
+        -- },
+        -- {
+        --     key = '>',
+        --     action = wezterm.action_callback(function(window, pane)
+        --         local process = pane:get_foreground_process_name():lower()
+        --         if not process:find("nvim") then
+        --             resize(window, pane, 'Right')
+        --         end
+        --     end)
+        -- },
+        -- {
+        --     key = '|',
+        --     action = wezterm.action_callback(function(window, pane)
+        --         local process = pane:get_foreground_process_name():lower()
+        --         if not process:find("nvim") then
+        --             resize(window, pane, 'Up')
+        --         end
+        --     end)
+        -- },
+        -- {
+        --     key = '\\',
+        --     action = wezterm.action_callback(function(window, pane)
+        --         local process = pane:get_foreground_process_name():lower()
+        --         if not process:find("nvim") then
+        --             resize(window, pane, 'Down')
+        --         end
+        --     end)
+        -- },
         {
             key = '<',
             mods = 'LEADER',
