@@ -114,6 +114,7 @@ config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.font_size = 15
 config.window_background_opacity = 0.95
 config.window_background_image = nil
+config.macos_window_background_blur = 40
 
 -- Keys
 config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
@@ -210,14 +211,14 @@ config.keys = {
                     pane
                 )
             else
-                sessionizer.toggle(window, pane);
+                sessionizer.toggle(window, pane, windows);
             end
         end),
     },
     {
         key = 'F13',
         action = wezterm.action_callback(function(window, pane)
-            sessionizer.toggle(window, pane)
+            sessionizer.toggle(window, pane, windows)
         end)
     },
 }
@@ -227,6 +228,7 @@ if windows then
     config.prefer_egl = true;
     config.font_size = 12
     config.window_background_opacity = 1.0
+    config.front_end = "OpenGL"
 end
 
 return config
