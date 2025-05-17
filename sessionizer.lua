@@ -4,6 +4,8 @@ local act = wezterm.action
 
 local M = {}
 
+local projects_cache = nil
+
 M.toggle = function(window, pane, windows)
     local function expand_path(path)
         return path:gsub("^~", os.getenv("HOME"))
@@ -11,7 +13,6 @@ M.toggle = function(window, pane, windows)
 
     local function build_find_command(dirs)
         local parts = {}
-
         for _, entry in ipairs(dirs) do
             local path = expand_path(entry[1])
             local maxdepth = entry[2]
@@ -26,7 +27,6 @@ M.toggle = function(window, pane, windows)
             end
             table.insert(parts, cmd)
         end
-
         if windows then
             return "powershell -Command \"" .. table.concat(parts, " ; ") .. "\""
         end
@@ -34,11 +34,14 @@ M.toggle = function(window, pane, windows)
     end
 
     local function get_projects()
+        if projects_cache then
+            return projects_cache
+        end
+
         local cmd = build_find_command(constants.directories)
         local f = io.popen(cmd)
         local result = f:read("*a")
         f:close()
-
         local choices = {}
         local choices_labels = {}
         for dir in result:gmatch("[^\n]+") do
@@ -53,21 +56,20 @@ M.toggle = function(window, pane, windows)
                 label = dir
             end
             choices_labels[label] = true
-
             table.insert(choices, { label = label, id = dir })
         end
+
+        projects_cache = choices
         return choices
     end
 
     local projects = get_projects()
-
     window:perform_action(
         act.InputSelector({
             action = wezterm.action_callback(function(win, _, id, label)
                 if not id and not label then
                 else
                     local workspace = id:match("([^/]+)$"):gsub("%.", "_")
-
                     win:perform_action(
                         act.SwitchToWorkspace({
                             name = workspace,
@@ -83,6 +85,10 @@ M.toggle = function(window, pane, windows)
         }),
         pane
     )
+end
+
+M.clear_cache = function()
+    projects_cache = nil
 end
 
 return M

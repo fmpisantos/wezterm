@@ -85,7 +85,7 @@ config.max_fps = 120
 config.front_end = "WebGpu"
 
 -- Window decoration
-config.window_decorations = "RESIZE"
+-- config.window_decorations = "RESIZE"
 config.window_padding = {
     left = 0,
     right = 0,
@@ -168,6 +168,20 @@ config.keys = {
     { key = 'k', mods = 'LEADER', action = act.ActivatePaneDirection 'Up' },
     { key = 'j', mods = 'LEADER', action = act.ActivatePaneDirection 'Down' },
     {
+        key = "R",
+        mods = "LEADER",
+        action = wezterm.action_callback(function(_, _)
+            sessionizer.clear_cache();
+        end)
+    },
+    {
+        key = "r",
+        mods = "LEADER",
+        action = wezterm.action_callback(function(_, _)
+            sessionizer.clear_cache();
+        end)
+    },
+    {
         key = '<',
         mods = 'LEADER',
         action = wezterm.action_callback(function(window, pane)
@@ -226,7 +240,7 @@ config.keys = {
 if windows then
     config.default_prog = { 'powershell.exe', '-NoLogo' };
     config.prefer_egl = true;
-    config.font_size = 12
+    config.font_size = 10
     config.window_background_opacity = 1.0
     config.front_end = "OpenGL"
 end
