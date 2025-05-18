@@ -7,41 +7,58 @@ local os = require 'os'
 local act = wezterm.action
 local platform = wezterm.target_triple
 
-local windows = false
+local windows, macos = false, false
 
 if platform:find("windows") then
     windows = true
+elseif wezterm.target_triple:find("apple%-darwin") ~= nil then
+    macos = true
+end
+
+local function get_nvim_path()
+    if macos then
+        return "/opt/homebrew/bin/nvim"
+    end
+    return "nvim"
+end
+
+local function generate_session_id()
+    local time = os.time()
+    local random = math.random(1000, 9999)
+    return string.format("%d-%d", time, random)
+end
+
+local session_id = generate_session_id()
+
+local function log(str, newLine)
+    if newLine then
+        str = str .. "\n"
+    end
+    local f = io.open("/tmp/wezterm-" .. session_id, 'a')
+    f:write(str)
+    f:flush()
+    f:close()
 end
 
 wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
-    local name = os.tmpname()
+    local name = os.tmpname() .. ".zsh"
     local f = io.open(name, 'w+')
     f:write(text)
     f:flush()
     f:close()
 
-    if windows then
-        window:perform_action(
-            act.SpawnCommandInNewTab {
-                args = { 'nvim', '+', name },
-            },
-            pane
-        )
-    else
-        window:perform_action(
-            act.SpawnCommandInNewTab {
-                args = { 'zsh', '-l', '-c', 'nvim + ' .. name .. ' || read' }
-            },
-            pane
-        )
-    end
+    window:perform_action(
+        act.SpawnCommandInNewTab {
+            args = { get_nvim_path(), '+', name }
+        },
+        pane
+    )
 
-    wezterm.sleep_ms(1000)
+    wezterm.sleep_ms(500)
     os.remove(name)
 end)
-
 
 local resize_mode = false
 
@@ -60,7 +77,49 @@ local function getExecutableName(path)
     return path:match("([^\\]+)%.exe$")
 end
 
-wezterm.on('update-right-status', function(window, _)
+local currentWorkspace = nil
+local lastWorkspace = nil
+
+local function workspace_exists(_name, window)
+    local active_workspaces = wezterm.mux.get_workspace_names()
+
+    local exists = false
+    for _, name in ipairs(active_workspaces) do
+        if name == _name then
+            exists = true
+            break
+        end
+    end
+
+    return exists
+end
+
+wezterm.on('switch_to_last_workspace', function(window, pane)
+    if lastWorkspace then
+        if workspace_exists(lastWorkspace, window) then
+            window:perform_action(
+                act.SwitchToWorkspace {
+                    name = lastWorkspace
+                },
+                pane
+            )
+        else
+            lastWorkspace = nil
+        end
+    end
+end)
+
+wezterm.on('update-right-status', function(window, _pane)
+    local workspace = window:active_workspace()
+    if currentWorkspace == nil then
+        currentWorkspace = workspace
+    end
+
+    if currentWorkspace ~= workspace then
+        lastWorkspace = currentWorkspace
+        currentWorkspace = workspace
+    end
+
     local _ = window:active_tab()
 
     for _, tab in ipairs(window:mux_window():tabs()) do
@@ -107,6 +166,7 @@ config.quit_when_all_windows_are_closed = true
 config.enable_scroll_bar = false
 config.window_close_confirmation = "NeverPrompt"
 config.audible_bell = "Disabled"
+config.switch_to_last_active_tab_when_closing_tab = true
 
 -- Colors
 config.color_scheme = 'Tokyo Night Moon'
@@ -148,6 +208,11 @@ config.keys = {
         key = 'w',
         mods = 'LEADER',
         action = wezterm.action.CloseCurrentTab { confirm = false },
+    },
+    {
+        key = '=',
+        mods = 'LEADER',
+        action = act.EmitEvent 'switch_to_last_workspace'
     },
     { key = 'n', mods = 'LEADER', action = act.SpawnTab 'DefaultDomain' },
     { key = 'L', mods = 'LEADER', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
