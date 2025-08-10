@@ -17,7 +17,8 @@ end
 
 local function get_nvim_path()
     if macos then
-        return "/opt/homebrew/bin/nvim"
+        return "/Users/fmpi.santos/.local/share/bob/nvim-bin/nvim"
+        -- return "/opt/homebrew/bin/nvim"
     end
     return "nvim"
 end
@@ -43,21 +44,29 @@ end
 wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
-    local name = os.tmpname() .. ".zsh"
+    local temp_dir = os.getenv("TMPDIR") or "/tmp"
+    local name = temp_dir .. "/wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
+
     local f = io.open(name, 'w+')
+    if not f then
+        wezterm.log_error("Could not create temp file: " .. name)
+        return
+    end
+
     f:write(text)
-    f:flush()
     f:close()
 
     window:perform_action(
         act.SpawnCommandInNewTab {
-            args = { get_nvim_path(), '+', name }
+            args = {
+                get_nvim_path(),
+                '+set bufhidden=wipe',
+                '+autocmd BufWipeout <buffer> call delete(expand("%:p"))',
+                name
+            }
         },
         pane
     )
-
-    wezterm.sleep_ms(1200)
-    os.remove(name)
 end)
 
 local resize_mode = false
