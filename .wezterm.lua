@@ -17,7 +17,8 @@ end
 
 local function get_nvim_path()
     if macos then
-        return "/opt/homebrew/bin/nvim"
+        return "/Users/fmpi.santos/.local/share/bob/nvim-bin/nvim"
+        -- return "/opt/homebrew/bin/nvim"
     end
     return "nvim"
 end
@@ -43,21 +44,29 @@ end
 wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
-    local name = os.tmpname() .. ".zsh"
+    local temp_dir = os.getenv("TMPDIR") or "/tmp"
+    local name = temp_dir .. "/wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
+
     local f = io.open(name, 'w+')
+    if not f then
+        wezterm.log_error("Could not create temp file: " .. name)
+        return
+    end
+
     f:write(text)
-    f:flush()
     f:close()
 
     window:perform_action(
         act.SpawnCommandInNewTab {
-            args = { get_nvim_path(), '+', name }
+            args = {
+                get_nvim_path(),
+                '+set bufhidden=wipe',
+                '+autocmd BufWipeout <buffer> call delete(expand("%:p"))',
+                name
+            }
         },
         pane
     )
-
-    wezterm.sleep_ms(500)
-    os.remove(name)
 end)
 
 local resize_mode = false
@@ -219,15 +228,15 @@ config.keys = {
     { key = 'H', mods = 'LEADER', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
     { key = 'J', mods = 'LEADER', action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
     { key = 'K', mods = 'LEADER', action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
-    { key = '1', mods = 'LEADER', action = act.ActivateTab(0) },
-    { key = '2', mods = 'LEADER', action = act.ActivateTab(1) },
-    { key = '3', mods = 'LEADER', action = act.ActivateTab(2) },
-    { key = '4', mods = 'LEADER', action = act.ActivateTab(3) },
-    { key = '5', mods = 'LEADER', action = act.ActivateTab(4) },
-    { key = '6', mods = 'LEADER', action = act.ActivateTab(5) },
-    { key = '7', mods = 'LEADER', action = act.ActivateTab(6) },
-    { key = '8', mods = 'LEADER', action = act.ActivateTab(7) },
-    { key = '9', mods = 'LEADER', action = act.ActivateTab(8) },
+    { key = '!', mods = 'LEADER', action = act.ActivateTab(0) },
+    { key = '@', mods = 'LEADER', action = act.ActivateTab(1) },
+    { key = '#', mods = 'LEADER', action = act.ActivateTab(2) },
+    { key = '$', mods = 'LEADER', action = act.ActivateTab(3) },
+    { key = '%', mods = 'LEADER', action = act.ActivateTab(4) },
+    { key = '^', mods = 'LEADER', action = act.ActivateTab(5) },
+    { key = '&', mods = 'LEADER', action = act.ActivateTab(6) },
+    { key = '*', mods = 'LEADER', action = act.ActivateTab(7) },
+    { key = '(', mods = 'LEADER', action = act.ActivateTab(8) },
     { key = 'h', mods = 'LEADER', action = act.ActivatePaneDirection 'Left' },
     { key = 'l', mods = 'LEADER', action = act.ActivatePaneDirection 'Right' },
     { key = 'k', mods = 'LEADER', action = act.ActivatePaneDirection 'Up' },
