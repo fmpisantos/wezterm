@@ -8,7 +8,8 @@ M.directories = {
     { "C:\\Users\\fm.santos\\Documents\\notes", 0 },
     { "D:\\net-nuget-packages",                 0 },
     { "~\\.config",                             0 },
-    { "~\\Documents/WindowsPowerShell",         0 },
+    { "~\\Documents",         0 },
+    { "F:\\",         1 },
 }
 
 return M
