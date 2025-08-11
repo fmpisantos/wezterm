@@ -29,6 +29,17 @@ local function generate_session_id()
     return string.format("%d-%d", time, random)
 end
 
+local function get_temp_file()
+    if windows then
+        local temp_dir = os.getenv("TEMP") or os.getenv("TMP") or "C:\\Windows\\Temp"
+        local sep = package.config:sub(1,1)
+        return temp_dir .. sep .. "wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
+    else
+        local temp_dir = os.getenv("TMPDIR") or "/tmp"
+        return temp_dir .. "/wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
+    end
+end
+
 local session_id = generate_session_id()
 
 local function log(str, newLine)
@@ -44,8 +55,7 @@ end
 wezterm.on('trigger-vim-with-scrollback', function(window, pane)
     local text = pane:get_lines_as_text(pane:get_dimensions().scrollback_rows)
 
-    local temp_dir = os.getenv("TMPDIR") or "/tmp"
-    local name = temp_dir .. "/wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
+    local name = get_temp_file()
 
     local f = io.open(name, 'w+')
     if not f then
