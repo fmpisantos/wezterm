@@ -9,7 +9,7 @@ M.directories = {
     { "D:\\net-nuget-packages",                 0 },
     { "~\\.config",                             0 },
     { "~\\Documents",         0 },
-    { "F:\\",         1 },
+    -- { "F:\\",         1 },
 }
 
 return M
