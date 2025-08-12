@@ -32,7 +32,7 @@ end
 local function get_temp_file()
     if windows then
         local temp_dir = os.getenv("TEMP") or os.getenv("TMP") or "C:\\Windows\\Temp"
-        local sep = package.config:sub(1,1)
+        local sep = package.config:sub(1, 1)
         return temp_dir .. sep .. "wezterm_scrollback_" .. os.time() .. "_" .. math.random(1000, 9999) .. ".txt"
     else
         local temp_dir = os.getenv("TMPDIR") or "/tmp"
@@ -72,8 +72,12 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
                 get_nvim_path(),
                 '+set bufhidden=wipe',
                 '+autocmd BufWipeout <buffer> call delete(expand("%:p"))',
+                '+normal! G',
                 name
-            }
+            },
+            set_environment_variables = {
+                FROM_WEZTERM = "1",
+            },
         },
         pane
     )
@@ -322,7 +326,7 @@ config.keys = {
 }
 
 if windows then
-    config.default_prog = { 'powershell.exe', '-NoLogo' };
+    config.default_prog = { 'pwsh', '-NoLogo' };
     config.prefer_egl = true;
     config.font_size = 10
     config.window_background_opacity = 1.0
