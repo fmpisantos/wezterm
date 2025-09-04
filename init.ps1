@@ -15,8 +15,13 @@ $sshFunction = @'
 
 # Custom SSH function using WezTerm with specific config
 function ssh {
-    param([Parameter(ValueFromRemainingArguments)][string[]]$Arguments)
-    wezterm --config-file "$env:USERPROFILE\.config\wezterm\.ssh_config.lua" start -- ssh @Arguments
+    param(
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$Arguments
+    )
+
+    # Launch WezTerm with alternate config and forward SSH arguments safely
+    wezterm start --config-file "$env:USERPROFILE\.config\wezterm\.ssh_config.lua" -- ssh --% @Arguments
 }
 '@
 
