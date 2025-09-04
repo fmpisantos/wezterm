@@ -157,4 +157,10 @@ if windows then
     config.front_end = "OpenGL"
 end
 
+config.term = "wezterm"
+config.set_environment_variables = {
+    COLORTERM = 'truecolor',
+    TERM = 'wezterm',
+}
+
 return config
