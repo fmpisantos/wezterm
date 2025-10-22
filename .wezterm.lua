@@ -195,9 +195,9 @@ config.switch_to_last_active_tab_when_closing_tab = true
 config.color_scheme = 'Tokyo Night Moon'
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.font_size = 15
-config.window_background_opacity = 0.95
+config.window_background_opacity = 0.75
 config.window_background_image = nil
-config.macos_window_background_blur = 40
+config.macos_window_background_blur = 90
 
 -- Keys
 config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
